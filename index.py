@@ -6,6 +6,18 @@ import sys
 import os
 import requests
 import json
+
+# Configurar codificación UTF-8 para Windows
+if sys.platform.startswith('win'):
+    # Configurar entorno para UTF-8 en Windows
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    # Intentar configurar la página de códigos a UTF-8
+    try:
+        import locale
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    except:
+        pass
+
 from encabezados import obtener_vista_previa  # Importar la función
 from concatColumnas import usar_una_columna_para_nombre, concatenar_dos_columnas
 from seleccionarCols import detectar_columna_telefonos, seleccionar_columnas, detectar_columna_emails
@@ -21,40 +33,40 @@ for arg in sys.argv[1:]:
         break
 
 if archivo_precargado:
-    print(f"📂 Archivo precargado: {archivo_precargado}")
+    print(f"[FILE] Archivo precargado: {archivo_precargado}")
 
 def ejecutar_headless():
     """Ejecutar en modo headless (sin GUI) para servidores"""
-    print("🖥️ Ejecutando en modo headless (sin GUI)")
+    print("Ejecutando en modo headless (sin GUI)")
     
     if archivo_precargado and os.path.exists(archivo_precargado):
-        print(f"📊 Procesando archivo: {archivo_precargado}")
+        print(f"Procesando archivo: {archivo_precargado}")
         try:
             # Procesar archivo sin GUI
             encabezados, vista_previa = obtener_vista_previa(archivo_precargado)
             if vista_previa is not None:
-                print(f"✅ Archivo procesado correctamente. Filas: {len(vista_previa)}, Columnas: {len(vista_previa.columns)}")
+                print(f"Archivo procesado correctamente. Filas: {len(vista_previa)}, Columnas: {len(vista_previa.columns)}")
                 
                 # Detectar columnas automáticamente
                 phone_col = detectar_columna_telefonos(vista_previa)
                 email_col = detectar_columna_emails(vista_previa)
                 
                 if phone_col:
-                    print(f"📞 Columna detectada para teléfonos: {phone_col}")
+                    print(f"Columna detectada para teléfonos: {phone_col}")
                 if email_col:
-                    print(f"📧 Columna detectada para correos electrónicos: {email_col}")
+                    print(f"Columna detectada para correos electrónicos: {email_col}")
                 
-                print("✅ Procesamiento headless completado")
+                print("Procesamiento headless completado")
                 return 0
             else:
-                print("❌ Error al procesar el archivo")
+                print("Error al procesar el archivo")
                 return 1
         except Exception as e:
-            print(f"❌ Error en modo headless: {e}")
+            print(f"Error en modo headless: {e}")
             return 1
     else:
-        print("ℹ️ Modo headless iniciado, esperando archivos para procesar...")
-        print("💡 Para procesar un archivo, reinicie con: python index.py --headless ruta/al/archivo.xlsx")
+        print("Modo headless iniciado, esperando archivos para procesar...")
+        print("Para procesar un archivo, reinicie con: python index.py --headless ruta/al/archivo.xlsx")
         return 0
 
 class App:
@@ -99,7 +111,7 @@ class App:
         self.concatenar_columnas_btn.pack(pady=5)
 
         # Nuevo botón para subir datos a la base de datos
-        self.subir_bd_btn = tk.Button(root, text="📤 Subir a Base de Datos", command=self.subir_a_base_datos, state="disabled", width=25, bg="#28a745", fg="white", font=("Arial", 10, "bold"))
+        self.subir_bd_btn = tk.Button(root, text="Subir a Base de Datos", command=self.subir_a_base_datos, state="disabled", width=25, bg="#28a745", fg="black", font=("Arial", 10, "bold"))
         self.subir_bd_btn.pack(pady=10)
 
         # Tabla para mostrar la vista previa
@@ -349,7 +361,7 @@ class App:
     def cargar_archivo_precargado(self):
         """Carga automáticamente el archivo precargado y prepara la interfaz"""
         try:
-            print(f"🔄 Cargando archivo precargado: {self.archivo}")
+            print(f"Cargando archivo precargado: {self.archivo}")
             self.archivo_lbl.config(text=f"Archivo precargado: {os.path.basename(self.archivo)}")
             
             # Cargar y procesar el archivo COMPLETO
@@ -388,19 +400,19 @@ class App:
                 self.concatenar_columnas_btn.config(state="normal")
                 self.subir_bd_btn.config(state="normal")  # Habilitar botón de subir a BD
                 
-                print(f"✅ Archivo precargado cargado correctamente.")
-                print(f"📊 Total de filas: {len(self.df_completo)}, Columnas: {len(self.df_completo.columns)}")
-                print(f"📋 Columnas disponibles: {list(self.df_completo.columns)}")
+                print(f"Archivo precargado cargado correctamente.")
+                print(f"Total de filas: {len(self.df_completo)}, Columnas: {len(self.df_completo.columns)}")
+                print(f"Columnas disponibles: {list(self.df_completo.columns)}")
                 
                 # Actualizar el título de la ventana para mostrar el archivo y total de registros
                 self.root.title(f"Cargador de Archivos Excel - {os.path.basename(self.archivo)} ({len(self.df_completo)} registros)")
                 
             else:
-                print("❌ Error al cargar el archivo precargado.")
+                print("Error al cargar el archivo precargado.")
                 self.archivo_lbl.config(text="❌ Error al cargar el archivo precargado")
                 
         except Exception as e:
-            print(f"❌ Error al cargar archivo precargado: {e}")
+            print(f"Error al cargar archivo precargado: {e}")
             self.archivo_lbl.config(text=f"❌ Error: {str(e)}")
 
     def reorganizar_columnas_bd(self, df):
