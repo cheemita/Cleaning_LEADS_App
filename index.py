@@ -18,6 +18,19 @@ if sys.platform.startswith('win'):
     except:
         pass
 
+# Función para print seguro que evita errores Unicode
+def safe_print(text):
+    """Print que maneja errores Unicode en Windows"""
+    try:
+        # Intentar print normal
+        print(text)
+    except UnicodeEncodeError:
+        # Si hay error, limpiar caracteres Unicode problemáticos
+        clean_text = str(text).encode('ascii', 'ignore').decode('ascii')
+        print(f"[CLEAN] {clean_text}")
+    except Exception as e:
+        print(f"[PRINT_ERROR] {str(e)}")
+
 from encabezados import obtener_vista_previa  # Importar la función
 from concatColumnas import usar_una_columna_para_nombre, concatenar_dos_columnas
 from seleccionarCols import detectar_columna_telefonos, seleccionar_columnas, detectar_columna_emails
@@ -33,11 +46,11 @@ for arg in sys.argv[1:]:
         break
 
 if archivo_precargado:
-    print(f"[FILE] Archivo precargado: {archivo_precargado}")
+    safe_print(f"[FILE] Archivo precargado: {archivo_precargado}")
 
 def ejecutar_headless():
     """Ejecutar en modo headless (sin GUI) para servidores"""
-    print("Ejecutando en modo headless (sin GUI)")
+    safe_print("Ejecutando en modo headless (sin GUI)")
     
     if archivo_precargado and os.path.exists(archivo_precargado):
         print(f"Procesando archivo: {archivo_precargado}")
@@ -122,8 +135,12 @@ class App:
         self.tree.configure(xscrollcommand=scrollbar_x.set)
 
         # AHORA sí cargar el archivo precargado (después de crear toda la interfaz)
+        safe_print(f"[DEBUG] Archivo precargado en constructor: {self.archivo}")
         if self.archivo:
+            safe_print("[DEBUG] Llamando a cargar_archivo_precargado()")
             self.cargar_archivo_precargado()
+        else:
+            safe_print("[DEBUG] No hay archivo precargado")
 
     def cargar_archivo(self):
         # Seleccionar archivo
@@ -361,7 +378,7 @@ class App:
     def cargar_archivo_precargado(self):
         """Carga automáticamente el archivo precargado y prepara la interfaz"""
         try:
-            print(f"Cargando archivo precargado: {self.archivo}")
+            safe_print(f"Cargando archivo precargado: {self.archivo}")
             self.archivo_lbl.config(text=f"Archivo precargado: {os.path.basename(self.archivo)}")
             
             # Cargar y procesar el archivo COMPLETO
@@ -400,20 +417,20 @@ class App:
                 self.concatenar_columnas_btn.config(state="normal")
                 self.subir_bd_btn.config(state="normal")  # Habilitar botón de subir a BD
                 
-                print(f"Archivo precargado cargado correctamente.")
-                print(f"Total de filas: {len(self.df_completo)}, Columnas: {len(self.df_completo.columns)}")
-                print(f"Columnas disponibles: {list(self.df_completo.columns)}")
+                safe_print(f"Archivo precargado cargado correctamente.")
+                safe_print(f"Total de filas: {len(self.df_completo)}, Columnas: {len(self.df_completo.columns)}")
+                safe_print(f"Columnas disponibles: {list(self.df_completo.columns)}")
                 
                 # Actualizar el título de la ventana para mostrar el archivo y total de registros
                 self.root.title(f"Cargador de Archivos Excel - {os.path.basename(self.archivo)} ({len(self.df_completo)} registros)")
                 
             else:
-                print("Error al cargar el archivo precargado.")
-                self.archivo_lbl.config(text="❌ Error al cargar el archivo precargado")
+                safe_print("Error al cargar el archivo precargado.")
+                self.archivo_lbl.config(text="ERROR: No se pudo cargar el archivo")
                 
         except Exception as e:
-            print(f"Error al cargar archivo precargado: {e}")
-            self.archivo_lbl.config(text=f"❌ Error: {str(e)}")
+            safe_print(f"Error al cargar archivo precargado: {e}")
+            self.archivo_lbl.config(text=f"ERROR: {str(e)}")
 
     def reorganizar_columnas_bd(self, df):
         """
